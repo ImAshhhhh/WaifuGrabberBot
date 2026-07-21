@@ -62,7 +62,7 @@ Set these critical values:
 BOT_TOKEN=123456:ABC-your-actual-token-from-botfather
 BOT_USERNAME=YourBotUsername
 
-DATABASE_URL=postgresql+asyncpg://waifu:waifu_pass@postgres:5432/waifugrabber
+DATABASE_URL=postgresql://waifu:waifu_pass@postgres:5432/waifugrabber
 REDIS_URL=redis://redis:6379/0
 
 USE_WEBHOOK=true
@@ -227,7 +227,7 @@ python3.12 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 
-# Update .env: DATABASE_URL=postgresql+asyncpg://waifu:waifu_pass@localhost:5432/waifugrabber
+# Update .env: DATABASE_URL=postgresql://waifu:waifu_pass@localhost:5432/waifugrabber
 #             REDIS_URL=redis://localhost:6379/0
 python -m bot.db.init_db
 ```

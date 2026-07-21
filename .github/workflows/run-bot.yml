@@ -91,7 +91,7 @@ jobs:
           cat > .env <<EOF
           BOT_TOKEN=${BOT_TOKEN}
           BOT_USERNAME=WaifuGrabberrBot
-          DATABASE_URL=postgresql+asyncpg://waifu:waifu_pass@postgres:5432/waifugrabber
+          DATABASE_URL=postgresql://waifu:waifu_pass@postgres:5432/waifugrabber
           PG_POOL_MIN=5
           PG_POOL_MAX=15
           REDIS_URL=redis://redis:6379/0
