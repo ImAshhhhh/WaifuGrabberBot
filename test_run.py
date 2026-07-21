@@ -52,6 +52,7 @@ try:
         Message,
         InlineKeyboardButton,
         InlineKeyboardMarkup,
+        BotCommand,
     )
     from aiogram.client.default import DefaultBotProperties
     from aiogram.enums import ParseMode
@@ -610,14 +611,14 @@ async def main():
 
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_my_commands([
-        ("start", "Welcome + help"),
-        ("guess", "Catch a spawned character"),
-        ("collection", "View your collection"),
-        ("stats", "Your catch stats"),
-        ("topusers", "Global top collectors"),
-        ("ctop", "This group's top collectors"),
-        ("changetime", "Change claim window (admins)"),
-        ("help", "How to play"),
+        BotCommand(command="start",       description="Welcome + help"),
+        BotCommand(command="guess",       description="Catch a spawned character"),
+        BotCommand(command="collection",  description="View your collection"),
+        BotCommand(command="stats",       description="Your catch stats"),
+        BotCommand(command="topusers",    description="Global top collectors"),
+        BotCommand(command="ctop",        description="This group's top collectors"),
+        BotCommand(command="changetime",  description="Change claim window (admins)"),
+        BotCommand(command="help",        description="How to play"),
     ])
 
     asyncio.create_task(cleanup_loop(bot))
