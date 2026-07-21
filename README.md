@@ -179,6 +179,48 @@ For full VPS deployment (Nginx + HTTPS webhook + systemd), see **[deploy.md](dep
 
 ---
 
+## ⚡ Quick Test Mode (No Docker, No Postgres, No Redis)
+
+Want to test the bot right now without setting up anything? Use the single-file test mode — it uses SQLite + in-memory state and runs in long-polling.
+
+```bash
+# 1. Clone
+git clone https://github.com/ImAshhhhh/WaifuGrabberBot.git
+cd WaifuGrabberBot
+
+# 2. Install minimal deps (just aiogram + rapidfuzz)
+pip install -r requirements-test.txt
+
+# 3. Run — it will prompt you for your bot token
+python test_run.py
+# >>> paste your token from @BotFather
+
+# 4. Add the bot to a test group as admin.
+# 5. Send 10 messages → a character spawns!
+# 6. Use /guess <name> to claim her.
+```
+
+**Test mode features:**
+- ✅ Spawns every **10 messages** (instead of 100) for fast iteration
+- ✅ All core commands: `/start`, `/help`, `/guess`, `/collection`, `/stats`, `/topusers`, `/ctop`, `/changetime`
+- ✅ Fuzzy name matching (rapidfuzz)
+- ✅ Colored inline buttons (Bot API 9.4 `style` field)
+- ✅ Auto-creates SQLite DB + imports the 508-character CSV on first run
+- ⚠️ Falls back to HTML instead of Rich Messages (works on every Telegram client)
+- ⚠️ Wrong `/guess` replies are public (no Ephemeral Messages in test mode)
+
+You can also pass the token via env or argv to skip the prompt:
+
+```bash
+BOT_TOKEN=123:ABC python test_run.py
+# or
+python test_run.py 123:ABC
+```
+
+For full VPS deployment (Nginx + HTTPS webhook + systemd), see **[deploy.md](deploy.md)**.
+
+---
+
 ## 🎨 Color & Button Cheatsheet
 
 We use the new `style` field on every interactive button:

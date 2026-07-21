@@ -1,0 +1,6 @@
+# Minimal deps for test_run.py (Quick Test Mode)
+# Install with:  pip install -r requirements-test.txt
+
+aiogram==3.30.0
+rapidfuzz==3.10.1
+# aiosqlite is NOT needed — test_run.py uses stdlib sqlite3
