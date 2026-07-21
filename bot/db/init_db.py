@@ -40,7 +40,7 @@ async def import_characters(conn) -> int:
                 r["image_url"],
             ))
 
-    await conn.execute("TRUNCATE characters RESTART IDENTITY")
+    await conn.execute("TRUNCATE characters RESTART IDENTITY CASCADE")
     await conn.executemany(
         """
         INSERT INTO characters
