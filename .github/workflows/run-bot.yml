@@ -177,14 +177,13 @@ jobs:
           shred -u .env 2>/dev/null || rm -f .env
           echo "✅ Cleaned up"
 
-      - name: 📦 Upload full bot logs as artifact
+      - name: 📦 Collect logs from containers
         if: always()
         run: |
           mkdir -p logs
           docker compose logs --no-color bot > logs/bot.log 2>&1 || true
           docker compose logs --no-color postgres > logs/postgres.log 2>&1 || true
           docker compose logs --no-color redis > logs/redis.log 2>&1 || true
-        if: always()
 
       - name: 📦 Upload logs
         if: always()
