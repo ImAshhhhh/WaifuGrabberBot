@@ -25,7 +25,7 @@ on:
           - "5"
           - "6"
       spawn_interval:
-        description: "🎯 Spawn every N group messages (lower = more spawns for testing)"
+        description: "⏱️ Spawn every N MINUTES (default 10)"
         required: true
         default: "10"
         type: string
@@ -89,11 +89,11 @@ jobs:
       - name: 🚀 Start bot in background
         env:
           BOT_TOKEN: ${{ steps.token.outputs.resolved_token }}
-          SPAWN_MSG_INTERVAL_OVERRIDE: ${{ inputs.spawn_interval }}
+          SPAWN_INTERVAL_OVERRIDE: ${{ inputs.spawn_interval }}
         run: |
-          # Override spawn interval if user requested
-          if [ -n "$SPAWN_MSG_INTERVAL_OVERRIDE" ]; then
-            sed -i "s/^SPAWN_MSG_INTERVAL = .*/SPAWN_MSG_INTERVAL = $SPAWN_MSG_INTERVAL_OVERRIDE  # overridden by GitHub Actions/" test_run.py
+          # Override spawn interval (now in MINUTES, not messages) if user requested
+          if [ -n "$SPAWN_INTERVAL_OVERRIDE" ]; then
+            sed -i "s/^SPAWN_INTERVAL_MIN = .*/SPAWN_INTERVAL_MIN = $SPAWN_INTERVAL_OVERRIDE  # overridden by GitHub Actions/" test_run.py
           fi
 
           # Start the bot in the background, redirect all output to a log file
