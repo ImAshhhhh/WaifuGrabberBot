@@ -1,0 +1,169 @@
+name: 🤖 Run WaifuGrabberBot (Timed)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Manual-trigger workflow: paste your bot token + pick how many hours to run.
+# The bot runs on GitHub's servers — no VPS needed.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      bot_token:
+        description: "🔑 Telegram bot token from @BotFather (format: 123456:ABC-DEF...)"
+        required: true
+        type: string
+      hours:
+        description: "⏱️ How many hours to run the bot (max 6 on free tier)"
+        required: true
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+      spawn_interval:
+        description: "🎯 Spawn every N group messages (lower = more spawns for testing)"
+        required: true
+        default: "10"
+        type: string
+      use_secret:
+        description: "🔒 Use BOT_TOKEN repo secret instead of the plaintext input above? (recommended)"
+        required: false
+        default: false
+        type: boolean
+
+# Auto-cancel any previous run if you trigger a new one
+concurrency:
+  group: waifu-bot-run
+  cancel-in-progress: true
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    # GitHub free tier hard limit is 6 hours (360 minutes)
+    timeout-minutes: 360
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: 🔐 Resolve bot token
+        id: token
+        env:
+          INPUT_TOKEN: ${{ inputs.bot_token }}
+          SECRET_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          if [ "${{ inputs.use_secret }}" = "true" ]; then
+            if [ -z "$SECRET_TOKEN" ]; then
+              echo "::error::You checked 'Use BOT_TOKEN repo secret' but no secret named BOT_TOKEN was found."
+              echo "::error::Go to: Settings → Secrets and variables → Actions → New repository secret"
+              echo "::error::Name: BOT_TOKEN   Value: your bot token"
+              exit 1
+            fi
+            echo "::notice::Using BOT_TOKEN repo secret (safer)."
+            echo "resolved_token=$SECRET_TOKEN" >> $GITHUB_OUTPUT
+          else
+            if [ -z "$INPUT_TOKEN" ]; then
+              echo "::error::No bot token provided. Either paste one above OR enable 'Use BOT_TOKEN repo secret'."
+              exit 1
+            fi
+            echo "::warning::You're passing the token as plaintext input. It will be visible in the workflow run UI to anyone with repo access. Use the repo secret option for production."
+            echo "resolved_token=$INPUT_TOKEN" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🚀 Start bot in background
+        env:
+          BOT_TOKEN: ${{ steps.token.outputs.resolved_token }}
+          SPAWN_MSG_INTERVAL_OVERRIDE: ${{ inputs.spawn_interval }}
+        run: |
+          # Override spawn interval if user requested
+          if [ -n "$SPAWN_MSG_INTERVAL_OVERRIDE" ]; then
+            sed -i "s/^SPAWN_MSG_INTERVAL = .*/SPAWN_MSG_INTERVAL = $SPAWN_MSG_INTERVAL_OVERRIDE  # overridden by GitHub Actions/" test_run.py
+          fi
+
+          # Start the bot in the background, redirect all output to a log file
+          nohup python test_run.py > bot.log 2>&1 &
+          echo $! > bot.pid
+          echo "::notice::Bot started with PID $(cat bot.pid)"
+
+          # Give it 5 seconds to start up
+          sleep 5
+
+          # Check if process is still alive
+          if ! kill -0 $(cat bot.pid) 2>/dev/null; then
+            echo "::error::Bot failed to start. Logs:"
+            cat bot.log
+            exit 1
+          fi
+
+          echo "✅ Bot is running. Live logs below:"
+          echo "─────────────────────────────────────────────"
+
+      - name: 📺 Stream live logs (and wait for X hours)
+        env:
+          HOURS: ${{ inputs.hours }}
+        run: |
+          SECONDS_TO_RUN=$(( HOURS * 3600 ))
+          echo "⏱️  Will run for $HOURS hour(s) = $SECONDS_TO_RUN seconds."
+          echo
+
+          # Stream logs while we wait
+          END=$(( $(date +%s) + SECONDS_TO_RUN ))
+          while [ $(date +%s) -lt $END ]; do
+            # Print any new log lines
+            if [ -f bot.log ]; then
+              tail -n 50 bot.log 2>/dev/null || true
+              > bot.log  # truncate so we don't print same lines again
+            fi
+            sleep 30
+          done
+
+      - name: 🛑 Stop bot gracefully
+        if: always()
+        run: |
+          if [ -f bot.pid ]; then
+            PID=$(cat bot.pid)
+            if kill -0 $PID 2>/dev/null; then
+              echo "🛑 Sending SIGTERM to bot (PID $PID)..."
+              kill $PID 2>/dev/null || true
+              sleep 3
+              # Force kill if still alive
+              if kill -0 $PID 2>/dev/null; then
+                echo "⚠️  Bot didn't exit gracefully, sending SIGKILL..."
+                kill -9 $PID 2>/dev/null || true
+              fi
+            fi
+          fi
+          echo "─────────────────────────────────────────────"
+          echo "📋 Final bot logs:"
+          cat bot.log 2>/dev/null || true
+
+      - name: 📦 Upload bot logs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-logs-${{ github.run_id }}
+          path: bot.log
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: 🧹 Cleanup sensitive files
+        if: always()
+        run: |
+          rm -f bot.log bot.pid test_bot.db
+          echo "✅ Cleaned up"

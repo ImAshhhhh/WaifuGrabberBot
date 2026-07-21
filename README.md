@@ -221,6 +221,52 @@ For full VPS deployment (Nginx + HTTPS webhook + systemd), see **[deploy.md](dep
 
 ---
 
+## ☁️ Run via GitHub Actions (No VPS, No Local Install)
+
+Want to run the bot temporarily without a VPS or local Python? Use the included GitHub Actions workflow — it spins up the bot on GitHub's servers for a set number of hours.
+
+### 📋 One-Time Setup (Recommended)
+
+1. Go to **Settings → Secrets and variables → Actions → New repository secret**
+   - **Name:** `BOT_TOKEN`
+   - **Value:** your bot token from @BotFather
+2. This keeps your token private — even from workflow logs.
+
+### ▶️ Trigger a Run
+
+1. Go to the **Actions** tab in the repo.
+2. Select **"🤖 Run WaifuGrabberBot (Timed)"** in the left sidebar.
+3. Click **"Run workflow"** — a form appears:
+
+   | Field | Description |
+   |---|---|
+   | `bot_token` | Paste your token (ignored if you check the secret box) |
+   | `hours` | How long to run — 1 to 6 hours (GitHub free-tier limit) |
+   | `spawn_interval` | Spawn every N messages (default 10 for fast testing) |
+   | `use_secret` | ✅ Check this to use the `BOT_TOKEN` repo secret (recommended) |
+
+4. Click **Run workflow**. The job takes ~30s to start.
+5. Click into the running workflow → **"run-bot"** job → watch live logs of the bot starting up.
+
+### ⚠️ Important Notes
+
+- **GitHub free-tier limit:** a single job runs at most **6 hours** before being killed. If you need 24/7 uptime, deploy on a real VPS (see `deploy.md`).
+- **Plaintext token warning:** if you don't check `use_secret`, your token appears in plaintext in the workflow run UI — visible to anyone with repo access. **Always prefer the secret option.**
+- **Auto-cancel:** starting a new run cancels the previous one (so you don't run two bots on the same token — Telegram would disconnect one anyway).
+- **Logs are uploaded as artifacts** at the end of every run (kept for 7 days).
+- **Cleanup:** the workflow automatically deletes `bot.log`, `bot.pid`, and `test_bot.db` at the end — no secrets persist.
+
+### 🧪 Quick Try (No Secret Setup)
+
+If you just want to test for 1 hour without setting up a secret:
+
+1. Actions tab → "🤖 Run WaifuGrabberBot (Timed)" → Run workflow
+2. Paste token, hours=`1`, spawn_interval=`10`, use_secret=`false`
+3. Click Run workflow
+4. Watch the logs — add the bot to a group → send 10 messages → character spawns!
+
+---
+
 ## 🎨 Color & Button Cheatsheet
 
 We use the new `style` field on every interactive button:
