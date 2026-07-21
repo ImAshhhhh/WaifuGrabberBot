@@ -112,18 +112,21 @@ async def main():
     asyncio.create_task(cleanup_loop(bot))
 
     await bot.delete_webhook(drop_pending_updates=True)
+    from aiogram.types import BotCommand
     await bot.set_my_commands([
-        ("start", "Welcome + help"),
-        ("guess", "Catch a spawned character"),
-        ("collection", "View your collection"),
-        ("fav", "Set a favorite character"),
-        ("gift", "Gift a character (reply to user)"),
-        ("trade", "Trade characters (reply to user)"),
-        ("topusers", "Global top collectors"),
-        ("ctop", "This group's top collectors"),
-        ("topgroups", "Global top groups"),
-        ("stats", "Your catch stats"),
-        ("changetime", "Change spawn interval (admins)"),
+        BotCommand(command="start",       description="Welcome + main menu"),
+        BotCommand(command="guess",       description="Catch a spawned character"),
+        BotCommand(command="collection",  description="View your collection"),
+        BotCommand(command="fav",         description="Set a favorite character"),
+        BotCommand(command="gift",        description="Gift a character (reply to user)"),
+        BotCommand(command="trade",       description="Trade characters (reply to user)"),
+        BotCommand(command="topusers",    description="Global top collectors"),
+        BotCommand(command="ctop",        description="This group's top collectors"),
+        BotCommand(command="topgroups",   description="Global top groups"),
+        BotCommand(command="stats",       description="Your catch stats"),
+        BotCommand(command="admin",       description="Owner control panel"),
+        BotCommand(command="changetime",  description="Change spawn interval (admins)"),
+        BotCommand(command="help",        description="How to play"),
     ])
 
     try:

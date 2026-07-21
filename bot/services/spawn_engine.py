@@ -17,7 +17,6 @@ from dataclasses import dataclass
 
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils.markdown import HTML
 
 from bot.config import settings
 from bot.db.pool import get_pool
