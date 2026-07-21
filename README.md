@@ -265,6 +265,27 @@ If you just want to test for 1 hour without setting up a secret:
 3. Click Run workflow
 4. Watch the logs — add the bot to a group → send 10 messages → character spawns!
 
+### ⚠️ CRITICAL: Disable Group Privacy Mode
+
+By default, Telegram bots have **Group Privacy Mode ON**, which means they can only see:
+- Messages that start with a `/command`
+- Replies to the bot's own messages
+- Messages in groups where the bot is an admin
+
+For WaifuGrabberBot to count **every** group message (and spawn after 10/100 of them), you MUST disable privacy mode:
+
+1. Open [@BotFather](https://t.me/BotFather)
+2. Send `/mybots`
+3. Choose your bot → **Bot Settings** → **Group Privacy**
+4. Click **Turn off**
+5. Remove the bot from any groups it's in, then re-add it (privacy changes don't apply retroactively)
+
+You can verify it worked by calling getMe — `can_read_all_group_messages` should be `true`:
+
+```bash
+curl "https://api.telegram.org/bot<YOUR_TOKEN>/getMe" | jq .result.can_read_all_group_messages
+```
+
 ---
 
 ## 🎨 Color & Button Cheatsheet
